@@ -39,8 +39,8 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
         flowerDatabase = new FlowerDatabase(this,"flores",null,1);
 
         setUpViews();
-        getDataFromDb();
-       //getDataFromService();
+        //getDataFromDb();
+       getDataFromService();
     }
 
 
@@ -104,7 +104,4 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
     public void itemClickListener(FlowerResponse flower) {
         Toast.makeText(this, flower.getName(), Toast.LENGTH_SHORT).show();
     }
-
-    //https://github.com/filippella/Retrofit2-RestApiDemo/blob/master/app/src/main/java/org/dalol/retrofit2_restapidemo/ui/MainActivity.java
-    //https://www.youtube.com/watch?v=xRRkOHhcUPk&t=2566s
 }
