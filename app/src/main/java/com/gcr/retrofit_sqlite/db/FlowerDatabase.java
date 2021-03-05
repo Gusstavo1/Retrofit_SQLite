@@ -11,7 +11,6 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.gcr.retrofit_sqlite.models.FlowerResponse;
-import com.gcr.retrofit_sqlite.utils.BitmapFlower;
 import com.gcr.retrofit_sqlite.utils.SQLScripts;
 
 import java.util.ArrayList;
@@ -43,8 +42,6 @@ public class FlowerDatabase extends SQLiteOpenHelper {
         values.put(SQLScripts.CATEGORIA, flores.getCategory());
         values.put(SQLScripts.PRECIO, flores.getPrice());
         values.put(SQLScripts.INSTRUCCIONES, flores.getInstructions());
-        values.put(SQLScripts.FOTO_URL, flores.getPhoto());
-        values.put(SQLScripts.FOTO, BitmapFlower.getPicturebyOfArray(flores.getPicture()));
         values.put(SQLScripts.NOMBRE, flores.getName());
         values.put(SQLScripts.ID, flores.getProductId());
         try {
@@ -66,6 +63,11 @@ public class FlowerDatabase extends SQLiteOpenHelper {
         while (cursor.moveToNext()) {
             Log.d("DB", "running getData: ");
             flower = new FlowerResponse();
+            flower.setCategory(cursor.getString(0));
+            flower.setPrice(cursor.getDouble(1));
+            flower.setInstructions(cursor.getString(2));
+            flower.setName(cursor.getString(3));
+            flower.setProductId(cursor.getInt(4));
             flowerList.add(flower);
         }
         db.close();

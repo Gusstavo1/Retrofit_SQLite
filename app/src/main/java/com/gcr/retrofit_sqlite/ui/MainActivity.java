@@ -1,9 +1,6 @@
 package com.gcr.retrofit_sqlite.ui;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.ConnectivityManager;
-import android.os.AsyncTask;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,8 +16,6 @@ import com.gcr.retrofit_sqlite.api.RetrofitClient;
 import com.gcr.retrofit_sqlite.db.FlowerDatabase;
 import com.gcr.retrofit_sqlite.models.FlowerResponse;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.List;
 
 import retrofit2.Call;
@@ -28,8 +23,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements RvAdapter.ItemClickListener {
-
-    //
 
     private RetrofitClient retrofitClient;
     private FlowerDatabase flowerDatabase;
@@ -46,8 +39,8 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
         flowerDatabase = new FlowerDatabase(this,"flores",null,1);
 
         setUpViews();
-        //getDataFromDb();
-        getDataFromService();
+        getDataFromDb();
+       //getDataFromService();
     }
 
 
@@ -81,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
             @Override
             public void onResponse(Call<List<FlowerResponse>> call, Response<List<FlowerResponse>> response) {
                 if (response.isSuccessful()) {
+                    SQLiteDatabase sqLiteDatabase = flowerDatabase.getWritableDatabase();
 
                     progressBar.setVisibility(View.GONE);
                     rvFlowers.setVisibility(View.VISIBLE);
@@ -90,10 +84,9 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
 
                     for (FlowerResponse flor :
                             response.body()) {
-                        Log.d(TAG, "onResponse: "+flor.getPhoto());
-                        SaveIntoDb saveIntoDb = new SaveIntoDb();
-                        saveIntoDb.execute(flor);
+                        flowerDatabase.addFlower(flor);
                     }
+                    sqLiteDatabase.close();
                 }
             }
 
@@ -110,45 +103,6 @@ public class MainActivity extends AppCompatActivity implements RvAdapter.ItemCli
     @Override
     public void itemClickListener(FlowerResponse flower) {
         Toast.makeText(this, flower.getName(), Toast.LENGTH_SHORT).show();
-    }
-
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
-    }
-
-    public class SaveIntoDb extends AsyncTask<FlowerResponse, FlowerResponse, Boolean> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Boolean doInBackground(FlowerResponse... flowerResponses) {
-            FlowerResponse flower = flowerResponses[0];
-            try {
-                InputStream stream = new URL("https://services.hanselandpetal.com/photos/" + flower.getPicture()).openStream();
-                Bitmap bitmap = BitmapFactory.decodeStream(stream);
-                flower.setPicture(bitmap);
-                publishProgress(flower);
-            }catch (Exception e){
-                Log.d(TAG, "doInBackground: "+e.getMessage());
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(FlowerResponse... values) {
-            super.onProgressUpdate(values);
-            Log.d(TAG, "onProgressUpdate: "+values[0].getName());
-            flowerDatabase.addFlower(values[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
-        }
     }
 
     //https://github.com/filippella/Retrofit2-RestApiDemo/blob/master/app/src/main/java/org/dalol/retrofit2_restapidemo/ui/MainActivity.java
